@@ -1,0 +1,12 @@
+.\objects\eventrecorder.o: C:\Keil_v5\ARM\PACK\Keil\ARM_Compiler\1.2.0\Source\EventRecorder.c
+.\objects\eventrecorder.o: C:\Users\zhily\Documents\GitHub\mc\RTE\_Target_1\RTE_Components.h
+.\objects\eventrecorder.o: C:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.3.0\Device\Include\stm32f3xx.h
+.\objects\eventrecorder.o: C:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.3.0\Device\Include\stm32f303xc.h
+.\objects\eventrecorder.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.0\CMSIS\Include\core_cm4.h
+.\objects\eventrecorder.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\eventrecorder.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.0\CMSIS\Include\cmsis_compiler.h
+.\objects\eventrecorder.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.0\CMSIS\Include\cmsis_armcc.h
+.\objects\eventrecorder.o: C:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.3.0\Device\Include\system_stm32f3xx.h
+.\objects\eventrecorder.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\eventrecorder.o: C:\Keil_v5\ARM\PACK\Keil\ARM_Compiler\1.2.0\Include\EventRecorder.h
+.\objects\eventrecorder.o: C:\Users\zhily\Documents\GitHub\mc\RTE\Compiler\EventRecorderConf.h

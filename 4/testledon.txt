@@ -1,0 +1,93 @@
+#include <stm32f3xx.h>
+
+int pin = 0x4400;
+int runb;
+
+void Synhronize(){
+
+	RCC->CR |= 0x00000001;					//HSI on
+	while(!(RCC->CR&0x00000002));		//HSI ready
+	
+	RCC->CFGR = 0x0518000A;					// 0000 0101 0001 1000 0000 0000 0000 1010
+	
+	RCC->CR |= 0x01000000;				//PLL on
+	while(!(RCC->CR&0x02000000));	// PLL ready
+}	
+
+void Delay(int del)
+{
+	while(del--);
+}
+int t = 0x1100;
+__irq void TIM2_IRQHandler(void){
+	TIM2->SR &=~ TIM_SR_UIF;
+	if(GPIOE->ODR == t)
+		GPIOE->ODR = pin;
+	else
+		GPIOE->ODR = t;
+}
+
+int main(){
+	int maskE;
+	maskE	= 0x00600000;
+	
+	Synhronize();
+	
+	RCC->APB1ENR |=0x00000001;	// TIM2 timer clock enable 
+	RCC->AHBENR |= maskE;				// I/O ports F,E clock enable
+  
+	GPIOE->MODER= 0x55550000;
+	GPIOF->PUPDR= 0x55555555; 
+	
+	NVIC_EnableIRQ(TIM2_IRQn);
+	NVIC_SetPriority(TIM2_IRQn,4);
+	
+	TIM2->PSC = 31999;
+	TIM2->ARR = 800;
+	TIM2->CR1 |= 0x0001;// tim up, tim on
+	TIM2->DIER |= TIM_DIER_UIE;// allow interrupt
+	TIM2->EGR |= 0x0001;
+	
+	runb = 0;
+	
+	SYSCFG->EXTICR[3] = 0x0500 ;	
+	
+	EXTI->IMR |= 0x00000400;
+	//EXTI->FTSR|= 0x00000400;
+	EXTI->RTSR|= 0x00000400;
+	NVIC->ISER[1] = 0x00000100;
+	//NVIC_EnableIRQ(EXTI15_10_IRQn);
+	NVIC_SetPriority(EXTI15_10_IRQn,5);
+
+
+	while(1){
+		int push = 0x00000400;//push
+	
+		int up = 0x0010;
+		int down = 0x0040;
+		
+		NVIC->ICPR[0] &= ~0x00000040;
+		if(runb){
+			if (GPIOF->IDR & push){
+        Delay(50);
+        if (GPIOF->IDR & push){
+					runb = 0;
+						if(pin > 0xFF00){	
+							pin = 0x0100;
+						}else{	
+							pin = pin<<1;
+						}
+					} 
+				}
+		}else{
+				 if (!(GPIOF->IDR & push)){
+            Delay (50);
+            if (!(GPIOF->IDR & push)){
+                runb = 1;
+            }
+        }
+	  }
+	}
+
+	return 0;
+}

@@ -1,0 +1,78 @@
+#include <stm32f3xx.h>
+void led_on(uint32_t led);
+
+
+#define LED_BLUE1 0x00000100
+#define LED_BLUE2 0x00001000
+#define LED_RED1 0x00000200
+#define LED_RED2 0x00002000
+#define LED_GREEN1 0x00000800
+#define LED_GREEN2 0x00008000
+#define LED_ORANGE1 0x00000400
+#define LED_ORANGE2 0x00004000
+
+uint32_t counter;
+
+const uint32_t length = 8;
+
+#define RELOAD_COUNTER 0x00100000
+
+
+uint32_t ledOrder[length] = { 
+			LED_BLUE1 | LED_ORANGE1 | LED_RED2,
+			LED_RED1 | LED_GREEN1 | LED_ORANGE2, 
+	    LED_ORANGE1 | LED_BLUE2 | LED_GREEN2,
+	    LED_GREEN1 | LED_RED2 | LED_BLUE1,
+	    LED_BLUE2 | LED_ORANGE2 | LED_RED1,
+			LED_RED2 | LED_GREEN2 | LED_ORANGE1,
+			LED_ORANGE2 | LED_BLUE1 | LED_GREEN1,
+			LED_GREEN2 | LED_RED1 | LED_BLUE2};
+
+
+
+void ledOn(const uint32_t ledSet) {//move LED value to register
+	GPIOE->ODR = 0;
+	GPIOE->ODR = ledSet;
+}
+
+
+uint32_t colorIndex;
+uint32_t color;
+__irq void TIM2_IRQHandler (void) {
+	colorIndex = (colorIndex < length) ? colorIndex : 0;
+			
+	color = ledOrder[colorIndex];
+	ledOn(color);
+		
+	colorIndex++;
+	
+	TIM2->SR &= 0x10000000;//update flag with number
+}
+
+
+void init_timing() {
+	RCC -> APB1ENR |= 0x00000001;// TIM2 enable
+	RCC -> AHBENR |= 0x00200000;// turn on port iopE and iopF (21 22 bit)
+
+	
+	RCC -> CFGR |= 0x000C0000;//set PLLMUL as 5x (0011) bits 16-20
+	RCC -> CFGR |= 0x00000002;//PLL as system clock bits 0-1
+	RCC->CR |= 0x01000000;//turn on
+	
+	while(!(RCC->CR & 0x02000000));//wait to turn on
+
+	GPIOE -> MODER |= 0x55555555;//general purpose output mode
+	
+	NVIC -> ISER[0] = 0x11111111;//interrput priority
+
+	TIM2 -> ARR = RELOAD_COUNTER;//auto reload counter
+	
+	TIM2 -> DIER |= 0x00000001;//turn on interrupt
+	TIM2 -> CR1 |= 0x00000011;//ARPE auto reload, CEN - counter enable
+}
+
+int main(void) {
+	init_timing();
+
+	while(1);
+}

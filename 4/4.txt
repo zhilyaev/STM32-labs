@@ -1,0 +1,68 @@
+#include <stm32f3xx.h>
+
+int pin = 0x0100;
+float runb;
+
+void Synhronize(){
+
+	RCC->CR |= 0x00000001;					//HSI on
+	while(!(RCC->CR&0x00000002));		
+	
+	RCC->CFGR = 0x0518000A;					
+	
+	RCC->CR |= 0x01000000;				//PLL on
+	while(!(RCC->CR&0x02000000));	
+}	
+
+void Delay(int del)
+{
+	while(del--);
+}
+
+__irq void TIM2_IRQHandler(void)
+{
+	TIM2->SR &=~ TIM_SR_UIF;
+	
+	ADC1->CR |= 0x00000004;
+	
+		GPIOE->ODR = ADC1->DR ;
+	
+}
+
+int main(){
+	int maskE;
+	maskE	= 0x10600000;
+	runb = 0;
+	Synhronize();
+	
+	RCC->APB1ENR |=0x0000001;
+	RCC->CFGR2 |= RCC_CFGR2_ADCPRE12_DIV8;	
+	RCC->AHBENR |= maskE;				
+	GPIOE->MODER= 0x55550000;
+	
+	NVIC_EnableIRQ(TIM2_IRQn);
+	NVIC_SetPriority(TIM2_IRQn,4);
+	TIM2->PSC = 32999;
+	TIM2->ARR = 1000;
+	TIM2->CR1 |= 0x0001;
+	TIM2->DIER |= TIM_DIER_UIE;
+	TIM2->EGR |= 0x0001;
+	
+		
+	ADC1->SMPR2 |= 0x03000000;
+	ADC1->CFGR |= 0x40811020;
+	ADC1->SQR1 = 0x00000400;
+	ADC1->SQR2 = 0;
+	ADC1->SQR3 = 0;
+	ADC1->SQR4 = 0;
+	ADC1_2_COMMON->CCR |= 0x00800000;
+	ADC1->IER = 0;
+	ADC1->CR |= 0x00000001;
+
+	while(1){
+		
+		
+	}
+
+	return 0;
+}
